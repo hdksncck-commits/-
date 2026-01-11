@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مغامرة الغابة الغامضة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2c5530;
+            --secondary: #73a942;
+            --accent: #f9e076;
+            --light: #f8f9fa;
+            --dark: #1a1a2e;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a3c1f 0%, #2c5530 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--secondary);
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo i {
+            margin-left: 10px;
+            color: var(--secondary);
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            margin-top: 10px;
+            color: #fff;
+        }
+
+        .game-area {
+            background-color: rgba(26, 58, 32, 0.85);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid rgba(115, 169, 66, 0.3);
+            min-height: 320px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .story-container {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .scene-title {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--secondary);
+        }
+
+        .story-text {
+            line-height: 1.7;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            text-align: justify;
+        }
+
+        .character {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            background-color: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: var(--shadow);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .choice-btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px 20px;
+            font-size: 1.1rem;
+            text-align: right;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-btn:hover {
+            background-color: #5d8f35;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .choice-btn:active {
+            transform: translateY(1px);
+        }
+
+        .choice-btn i {
+            font-size: 1.2rem;
+            margin-left: 10px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background-color: rgba(26, 58, 32, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(115, 169, 66, 0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            color: #ccc;
+        }
+
+        .progress-container {
+            margin: 25px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--secondary);
+            border-radius: 5px;
+            width: 30%;
+            transition: width 0.5s ease;
+        }
+
+        .action-effect {
+            position: absolute;
+            font-size: 2rem;
+            color: var(--accent);
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .inventory {
+            background-color: rgba(26, 58, 32, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(115, 169, 66, 0.3);
+        }
+
+        .inventory-title {
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .inventory-title i {
+            margin-left: 8px;
+        }
+
+        .inventory-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .inventory-item {
+            background-color: var(--primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--secondary);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        /* تأثيرات للهواتف */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .game-area {
+                padding: 15px;
+                min-height: 300px;
+            }
+            
+            .character {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+            
+            .choice-btn {
+                padding: 16px 18px;
+                font-size: 1rem;
+            }
+            
+            .stats-bar {
+                padding: 12px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* رسوميات إضافية */
+        .tree {
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            font-size: 3rem;
+            color: #3a5f40;
+            z-index: -1;
+        }
+
+        .moon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 2.5rem;
+            color: #f9e076;
+            opacity: 0.7;
+            animation: pulse 4s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { opacity: 0.5; transform: scale(1); }
+            to { opacity: 0.9; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo"><i class="fas fa-gamepad"></i> مغامرات تفاعلية</div>
+            <div class="game-title">مغامرة الغابة الغامضة</div>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="health">80</div>
+                <div class="stat-label">الصحة</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="energy">60</div>
+                <div class="stat-label">الطاقة</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="points">120</div>
+                <div class="stat-label">النقاط</div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-label">
+                <span>تقدم القصة</span>
+                <span id="progress-percent">30%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="tree">🌲</div>
+            <div class="moon">🌙</div>
+            
+            <div class="story-container" id="story-container">
+                <h2 class="scene-title" id="scene-title">بداية الرحلة</h2>
+                <p class="story-text" id="story-text">
+                    تجد نفسك واقفاً عند مدخل غابة كثيفة مع حلول المساء. أمامك ثلاثة مسارات: طريق مضيء إلى اليمين، مسار معتم إلى اليسار، وطريق متعرج يتجه مباشرة نحو قلب الغابة. سمعت عن كنز مخبأ في هذه الغابة، ولكنك سمعت أيضاً عن مخاطرها. ماذا ستفعل؟
+                </p>
+            </div>
+
+            <div class="character" id="character">
+                🧙‍♂️
+            </div>
+        </div>
+
+        <div class="choices-container" id="choices-container">
+            <!-- سيتم ملء الخيارات ديناميكياً باستخدام JavaScript -->
+        </div>
+
+        <div class="inventory">
+            <div class="inventory-title"><i class="fas fa-backpack"></i> المعدات</div>
+            <div class="inventory-items" id="inventory-items">
+                <div class="inventory-item">🔦 مصباح</div>
+                <div class="inventory-item">🗺️ خريطة</div>
+                <div class="inventory-item">🍗 طعام</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>جميع الحقوق محفوظة © 2023 | لعبة مغامرة الغابة الغامضة</p>
+            <p>صممت خصيصاً للهواتف الذكية</p>
+        </div>
+    </div>
+
+    <script>
+        // بيانات القصة والخيارات
+        const storyData = {
+            start: {
+                title: "بداية الرحلة",
+                text: "تجد نفسك واقفاً عند مدخل غابة كثيفة مع حلول المساء. أمامك ثلاثة مسارات: طريق مضيء إلى اليمين، مسار معتم إلى اليسار، وطريق متعرج يتجه مباشرة نحو قلب الغابة. سمعت عن كنز مخبأ في هذه الغابة، ولكنك سمعت أيضاً عن مخاطرها. ماذا ستفعل؟",
+                choices: [
+                    {
+                        text: "أسلك الطريق المضيء إلى اليمين",
+                        next: "rightPath",
+                        effect: { energy: -10, points: 20 }
+                    },
+                    {
+                        text: "أذهب إلى المسار المعتم إلى اليسار",
+                        next: "leftPath",
+                        effect: { health: -15, energy: -5, points: 30 }
+                    },
+                    {
+                        text: "أتبع الطريق المتعرج إلى قلب الغابة",
+                        next: "centerPath",
+                        effect: { energy: -20, points: 40 }
+                    }
+                ],
+                character: "🧙‍♂️"
+            },
+            rightPath: {
+                title: "الطريق المضيء",
+                text: "تمشي في الطريق المضيء وتكتشف أنه مضاء بمصابيح حجرية غريبة تشع بنور خافت. بعد مسافة، ترى مبنى قديماً نصف مدمر. يمكنك استكشاف المبنى أو الاستمرار في الطريق.",
+                choices: [
+                    {
+                        text: "أستكشف المبنى القديم",
+                        next: "oldBuilding",
+                        effect: { health: -5, energy: -10, points: 50 }
+                    },
+                    {
+                        text: "أستمر في السير على الطريق",
+                        next: "continuePath",
+                        effect: { energy: -15, points: 30 }
+                    },
+                    {
+                        text: "أعود إلى نقطة البداية",
+                        next: "start",
+                        effect: { energy: -10, points: 10 }
+                    }
+                ],
+                character: "🚶"
+            },
+            leftPath: {
+                title: "المعبر المظلم",
+                text: "دخلت إلى المسار المعتم حيث الأشجار الكثيفة تحجب ضوء القمر. تسمع صوت ذئاب في البعيد. يمكنك محاولة التسلل بهدوء أو تشغيل مصباحك لإضاءة الطريق.",
+                choices: [
+                    {
+                        text: "أتسلل بهدوء في الظلام",
+                        next: "sneakDark",
+                        effect: { health: -20, energy: -15, points: 60 }
+                    },
+                    {
+                        text: "أشعل مصباحي لأرى الطريق",
+                        next: "useFlashlight",
+                        effect: { energy: -10, points: 40 }
+                    },
+                    {
+                        text: "أعود أدراجي بسرعة",
+                        next: "start",
+                        effect: { energy: -5, points: 10 }
+                    }
+                ],
+                character: "🐺"
+            },
+            centerPath: {
+                title: "الطريق المتعرج",
+                text: "تبدأ بالسير في الطريق المتعرج الذي يقودك إلى أعلى تل. تصل إلى قمة التل وترى منظراً مذهلاً للغابة تحت ضوء القمر. ترى أيضاً نهراً متلألئاً في الأسفل. يمكنك النزول نحو النهر أو البحث عن مأوى ليلاً.",
+                choices: [
+                    {
+                        text: "أنزل نحو النهر المتلألئ",
+                        next: "river",
+                        effect: { health: 10, energy: -5, points: 40 }
+                    },
+                    {
+                        text: "أبحث عن مأوى لبقية الليل",
+                        next: "shelter",
+                        effect: { energy: 10, points: 30 }
+                    },
+                    {
+                        text: "أعود للخلف وأبحث عن طريق آخر",
+                        next: "start",
+                        effect: { energy: -15, points: 15 }
+                    }
+                ],
+                character: "🏔️"
+            },
+            oldBuilding: {
+                title: "المبنى القديم",
+                text: "دخلت المبنى القديم وتجد داخله غرفة مليئة بالكتب القديمة وأدوات غريبة. على الطاولة ترى صندوقاً مغلقاً. يمكنك محاولة فتح الصندوق أو أخذ بعض الكتب أو الخروج بسرعة.",
+                choices: [
+                    {
+                        text: "أحاول فتح الصندوق",
+                        next: "openChest",
+                        effect: { health: -10, points: 80 }
+                    },
+                    {
+                        text: "آخذ بعض الكتب الغريبة",
+                        next: "takeBooks",
+                        effect: { points: 60 }
+                    },
+                    {
+                        text: "أخرج بسرعة قبل أن يحل الظلام",
+                        next: "rightPath",
+                        effect: { energy: -5, points: 20 }
+                    }
+                ],
+                character: "🏚️"
+            }
+        };
+
+        // حالة اللعبة
+        const gameState = {
+            currentScene: "start",
+            health: 80,
+            energy: 60,
+            points: 120,
+            inventory: ["🔦 مصباح", "🗺️ خريطة", "🍗 طعام"],
+            progress: 30
+        };
+
+        // عناصر DOM
+        const sceneTitleElement = document.getElementById('scene-title');
+        const storyTextElement = document.getElementById('story-text');
+        const choicesContainerElement = document.getElementById('choices-container');
+        const characterElement = document.getElementById('character');
+        const healthElement = document.getElementById('health');
+        const energyElement = document.getElementById('energy');
+        const pointsElement = document.getElementById('points');
+        const progressFillElement = document.getElementById('progress-fill');
+        const progressPercentElement = document.getElementById('progress-percent');
+        const inventoryItemsElement = document.getElementById('inventory-items');
+
+        // تحديث واجهة اللعبة
+        function updateGame() {
+            const scene = storyData[gameState.currentScene];
+            
+            // تحديث القصة والشخصية
+            sceneTitleElement.textContent = scene.title;
+            storyTextElement.textContent = scene.text;
+            characterElement.textContent = scene.character;
+            
+            // تحديث الإحصائيات
+            healthElement.textContent = gameState.health;
+            energyElement.textContent = gameState.energy;
+            pointsElement.textContent = gameState.points;
+            
+            // تحديث شريط التقدم
+            progressFillElement.style.width = `${gameState.progress}%`;
+            progressPercentElement.textContent = `${gameState.progress}%`;
+            
+            // تحديث المعدات
+            updateInventory();
+            
+            // تحديث الخيارات
+            updateChoices(scene.choices);
+            
+            // تأثيرات بصرية
+            animateSceneChange();
+        }
+
+        // تحديث قائمة المعدات
+        function updateInventory() {
+            inventoryItemsElement.innerHTML = '';
+            gameState.inventory.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'inventory-item';
+                itemElement.textContent = item;
+                inventoryItemsElement.appendChild(itemElement);
+            });
+        }
+
+        // تحديث خيارات اللاعب
+        function updateChoices(choices) {
+            choicesContainerElement.innerHTML = '';
+            
+            choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.className = 'choice-btn';
+                button.innerHTML = `
+                    ${choice.text}
+                    <i class="fas fa-arrow-left"></i>
+                `;
+                
+                // إضافة تأثير عند النقر
+                button.addEventListener('click', () => {
+                    makeChoice(choice);
+                    animateButtonClick(button);
+                });
+                
+                choicesContainerElement.appendChild(button);
+                
+                // تأثير ظهور متتابع للأزرار
+                setTimeout(() => {
+                    button.style.opacity = '0';
+                    button.style.transform = 'translateY(10px)';
+                    button.style.transition = 'opacity 0.5s, transform 0.5s';
+                    
+                    setTimeout(() => {
+                        button.style.opacity = '1';
+                        button.style.transform = 'translateY(0)';
+                    }, 50);
+                }, index * 100);
+            });
+        }
+
+        // معالجة اختيار اللاعب
+        function makeChoice(choice) {
+            // تحديث حالة اللعبة بناءً على تأثير الخيار
+            if (choice.effect.health) {
+                gameState.health += choice.effect.health;
+                createEffectAnimation(choice.effect.health > 0 ? '❤️' : '💔', choice.effect.health);
+            }
+            if (choice.effect.energy) {
+                gameState.energy += choice.effect.energy;
+                createEffectAnimation(choice.effect.energy > 0 ? '⚡' : '😴', choice.effect.energy);
+            }
+            if (choice.effect.points) {
+                gameState.points += choice.effect.points;
+                createEffectAnimation('⭐', choice.effect.points);
+            }
+            
+            // تحديث تقدم القصة
+            gameState.progress = Math.min(gameState.progress + 10, 100);
+            
+            // الانتقال إلى المشهد التالي
+            gameState.currentScene = choice.next;
+            
+            // تحديث الواجهة
+            setTimeout(updateGame, 500);
+            
+            // إضافة عنصر جديد إلى المعدات أحياناً
+            if (Math.random() > 0.7 && gameState.inventory.length < 6) {
+                const newItems = ['⚔️ سيف', '🛡️ درع', '🧪 جرعة', '🔮 كرة بلورية', '💰 عملات ذهبية'];
+                const randomItem = newItems[Math.floor(Math.random() * newItems.length)];
+                if (!gameState.inventory.includes(randomItem)) {
+                    gameState.inventory.push(randomItem);
+                }
+            }
+            
+            // فحص إذا انتهت اللعبة (الصحة أو الطاقة منخفضة جداً)
+            checkGameOver();
+        }
+
+        // التحقق من نهاية اللعبة
+        function checkGameOver() {
+            if (gameState.health <= 0 || gameState.energy <= 0) {
+                setTimeout(() => {
+                    alert(gameState.health <= 0 ? 
+                        "لقد نفذت صحتك! انتهت اللعبة." : 
+                        "لقد نفذت طاقتك! انتهت اللعبة.");
+                    resetGame();
+                }, 1000);
+            }
+        }
+
+        // إعادة تعيين اللعبة
+        function resetGame() {
+            gameState.currentScene = "start";
+            gameState.health = 80;
+            gameState.energy = 60;
+            gameState.points = 120;
+            gameState.inventory = ["🔦 مصباح", "🗺️ خريطة", "🍗 طعام"];
+            gameState.progress = 30;
+            updateGame();
+        }
+
+        // تأثيرات الحركة عند تغيير المشهد
+        function animateSceneChange() {
+            const storyContainer = document.querySelector('.story-container');
+            storyContainer.style.animation = 'none';
+            setTimeout(() => {
+                storyContainer.style.animation = 'fadeIn 0.8s ease-out';
+            }, 10);
+            
+            // تغيير لون الخلفية تدريجياً
+            document.body.style.transition = 'background 1s ease';
+            const colors = [
+                'linear-gradient(135deg, #1a3c1f 0%, #2c5530 100%)',
+                'linear-gradient(135deg, #1a2b3c 0%, #2c3e50 100%)',
+                'linear-gradient(135deg, #3c1a3c 0%, #553055 100%)'
+            ];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            document.body.style.background = randomColor;
+        }
+
+        // تأثيرات عند النقر على الأزرار
+        function animateButtonClick(button) {
+            button.style.transform = 'scale(0.95)';
+            button.style.transition = 'transform 0.1s';
+            
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 100);
+        }
+
+        // إنشاء تأثيرات بصرية للإحصائيات
+        function createEffectAnimation(emoji, value) {
+            const effect = document.createElement('div');
+            effect.className = 'action-effect';
+            effect.textContent = `${emoji} ${value > 0 ? '+' : ''}${value}`;
+            effect.style.left = `${Math.random() * 80 + 10}%`;
+            effect.style.top = `${Math.random() * 50 + 25}%`;
+            
+            document.querySelector('.game-area').appendChild(effect);
+            
+            // حركة التأثير
+            let opacity = 1;
+            let posY = 0;
+            const animation = setInterval(() => {
+                opacity -= 0.02;
+                posY -= 2;
+                
+                effect.style.opacity = opacity;
+                effect.style.transform = `translateY(${posY}px)`;
+                
+                if (opacity <= 0) {
+                    clearInterval(animation);
+                    effect.remove();
+                }
+            }, 20);
+        }
+
+        // تهيئة اللعبة عند التحميل
+        document.addEventListener('DOMContentLoaded', () => {
+            updateGame();
+            
+            // إضافة تأثيرات إضافية للشخصية عند النقر
+            characterElement.addEventListener('click', () => {
+                characterElement.style.transform = 'scale(1.2)';
+                characterElement.style.transition = 'transform 0.2s';
+                
+                setTimeout(() => {
+                    characterElement.style.transform = 'scale(1)';
+                }, 200);
+                
+                // تأثير صوتي (محاكاة)
+                createEffectAnimation('✨', 5);
+                gameState.points += 5;
+                pointsElement.textContent = gameState.points;
+            });
+            
+            // إضافة عناصر رسومية متحركة
+            createAnimatedElements();
+        });
+
+        // إنشاء عناصر رسومية متحركة
+        function createAnimatedElements() {
+            const gameArea = document.querySelector('.game-area');
+            
+            // إضافة نجوم متحركة
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.style.position = 'absolute';
+                star.style.fontSize = `${Math.random() * 20 + 10}px`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.opacity = '0.3';
+                star.textContent = '✨';
+                star.style.animation = `pulse ${Math.random() * 3 + 2}s infinite alternate`;
+                gameArea.appendChild(star);
+            }
+        }
+    </script>
+</body>
+</html>
