@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة الجاسوس المتقدمة - Spy Game</title>
+    <title>لعبة الجاسوس - Spy Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -169,33 +169,10 @@
             box-shadow: 0 6px 15px rgba(0, 184, 148, 0.3);
         }
         
-        .spy-avatar {
-            background: linear-gradient(135deg, var(--danger-color), #d65c3e) !important;
-            box-shadow: 0 6px 15px rgba(225, 112, 85, 0.3) !important;
-        }
-        
         .player-name {
             font-size: 1.8rem;
             margin-bottom: 10px;
             color: var(--secondary-color);
-        }
-        
-        .player-role {
-            font-size: 1.4rem;
-            margin-bottom: 15px;
-            padding: 8px 20px;
-            border-radius: 30px;
-            display: inline-block;
-        }
-        
-        .civilian-role {
-            background: rgba(0, 184, 148, 0.2);
-            color: var(--secondary-color);
-        }
-        
-        .spy-role {
-            background: rgba(225, 112, 85, 0.2);
-            color: var(--danger-color);
         }
         
         .mission-container {
@@ -237,9 +214,9 @@
             border: 2px dashed var(--secondary-color);
         }
         
-        .spy-mission {
-            color: var(--danger-color);
+        .unknown-role {
             font-size: 1.4rem;
+            color: #aaa;
             padding: 15px;
         }
         
@@ -291,6 +268,15 @@
             color: var(--accent-color);
         }
         
+        .voting-instructions {
+            background: rgba(253, 203, 110, 0.1);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            color: var(--warning-color);
+            font-size: 0.95rem;
+        }
+        
         .voting-options {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -315,6 +301,13 @@
         .vote-option.selected {
             border-color: var(--secondary-color);
             background: rgba(0, 184, 148, 0.2);
+        }
+        
+        .vote-option.eliminated {
+            opacity: 0.5;
+            background: rgba(225, 112, 85, 0.2);
+            border-color: var(--danger-color);
+            cursor: not-allowed;
         }
         
         .vote-count {
@@ -346,6 +339,11 @@
         
         .vote-result-item:last-child {
             border-bottom: none;
+        }
+        
+        .eliminated-player {
+            color: var(--danger-color);
+            text-decoration: line-through;
         }
         
         /* الأزرار */
@@ -402,7 +400,7 @@
             margin: 5px;
         }
         
-        /* القائمة الجانبية */
+        /* قائمة اللاعبين */
         .players-list {
             margin-top: 20px;
             max-height: 200px;
@@ -419,12 +417,11 @@
             align-items: center;
         }
         
-        .player-item.spy {
+        .player-item.eliminated {
+            opacity: 0.6;
+            background: rgba(225, 112, 85, 0.1);
             border-right: 4px solid var(--danger-color);
-        }
-        
-        .player-item.civilian {
-            border-right: 4px solid var(--secondary-color);
+            text-decoration: line-through;
         }
         
         /* شاشة النتائج */
@@ -434,7 +431,6 @@
         
         .result-icon {
             font-size: 4rem;
-            color: var(--secondary-color);
             margin-bottom: 20px;
         }
         
@@ -552,6 +548,19 @@
             font-size: 0.9rem;
             color: #aaa;
         }
+        
+        .eliminated-count {
+            display: inline-block;
+            background: var(--danger-color);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            line-height: 25px;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -561,7 +570,7 @@
                 <i class="fas fa-user-secret"></i>
             </div>
             <h1>لعبة الجاسوس</h1>
-            <p class="subtitle">لعبة الذكاء والإثارة - اكتشف الجاسوس قبل فوات الأوان!</p>
+            <p class="subtitle">اكتشف الجاسوس قبل أن يدمر فريقك!</p>
         </header>
         
         <!-- شاشة إضافة اللاعبين -->
@@ -570,7 +579,6 @@
             <p style="margin: 15px 0 25px; color: #ccc;">أدخل أسماء اللاعبين (3 لاعبين على الأقل، 10 كحد أقصى)</p>
             
             <div class="player-input-container" id="playersContainer">
-                <!-- سيتم إضافة حقول اللاعبين هنا ديناميكيًا -->
                 <div class="player-input">
                     <input type="text" class="player-name-input" placeholder="اسم اللاعب الأول" maxlength="15">
                     <button class="remove-player" style="display: none;"><i class="fas fa-times"></i></button>
@@ -590,7 +598,7 @@
             </button>
             
             <div style="margin: 25px 0;">
-                <h3><i class="fas fa-clock"></i> مدة اللعبة</h3>
+                <h3><i class="fas fa-clock"></i> مدة كل جولة</h3>
                 <div class="time-settings">
                     <div class="time-option selected" data-time="3">
                         <div class="time-value">٣ دقائق</div>
@@ -615,11 +623,10 @@
         <!-- شاشة عرض الدور -->
         <div id="roleScreen" class="screen">
             <div class="role-display">
-                <div class="player-avatar" id="playerAvatar">
+                <div class="player-avatar">
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="player-name" id="currentPlayerName">محمد</div>
-                <div class="player-role civilian-role" id="playerRole">مواطن</div>
             </div>
             
             <div class="mission-container">
@@ -633,7 +640,7 @@
                 </button>
                 
                 <div style="margin-top: 15px; font-size: 0.9rem; color: #aaa;">
-                    <i class="fas fa-info-circle"></i> اضغط على الزر أعلاه لمعرفة المهمة
+                    <i class="fas fa-info-circle"></i> اضغط على الزر أعلاه لمعرفة مهمتك
                 </div>
             </div>
             
@@ -646,22 +653,18 @@
             <button id="nextPlayerRoleBtn" class="btn">
                 التالي <i class="fas fa-arrow-left"></i>
             </button>
-            
-            <button id="skipToGameBtn" class="btn btn-small" style="display: none;">
-                تخطي للعبة <i class="fas fa-forward"></i>
-            </button>
         </div>
         
         <!-- شاشة اللعبة الرئيسية -->
         <div id="gameScreen" class="screen">
             <div class="game-info">
                 <div class="info-item">
-                    <div class="info-label">اللاعبين</div>
-                    <div class="info-value" id="playersCount">5</div>
+                    <div class="info-label">اللاعبين الأحياء</div>
+                    <div class="info-value" id="alivePlayersCount">5</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">الجواسيس</div>
-                    <div class="info-value" id="spiesCount">1</div>
+                    <div class="info-value" id="spiesCount">؟</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">الوقت المتبقي</div>
@@ -672,7 +675,7 @@
             <div style="text-align: center; margin: 20px 0;">
                 <h3><i class="fas fa-gamepad"></i> مرحلة المناقشة</h3>
                 <p style="color: #ccc; margin-top: 10px;">
-                    ناقشوا معًا لاكتشاف الجاسوس. يمكنكم طرح أسئلة حول الموقع.
+                    ناقشوا معًا لاكتشاف الجاسوس. لديكم <span id="roundTime">5</span> دقائق.
                 </p>
             </div>
             
@@ -682,7 +685,7 @@
             
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button id="startVotingBtn" class="btn btn-danger" style="flex: 2;">
-                    <i class="fas fa-vote-yea"></i> بدء التصويت
+                    <i class="fas fa-vote-yea"></i> بدء التصويت للإقصاء
                 </button>
                 <button id="endGameEarlyBtn" class="btn" style="flex: 1;">
                     إنهاء
@@ -692,10 +695,12 @@
         
         <!-- شاشة التصويت -->
         <div id="votingScreen" class="screen voting-screen">
-            <h2 class="voting-title"><i class="fas fa-vote-yea"></i> التصويت على الجاسوس</h2>
-            <p style="margin-bottom: 20px; color: #ccc;">
-                اختر اللاعب الذي تعتقد أنه الجاسوس. سيتم كشف النتيجة بعد انتهاء الجميع من التصويت.
-            </p>
+            <h2 class="voting-title"><i class="fas fa-vote-yea"></i> التصويت للإقصاء</h2>
+            
+            <div class="voting-instructions">
+                <i class="fas fa-info-circle"></i>
+                صوت للاعب الذي تعتقد أنه الجاسوس. اللاعب الأكثر تصويتاً سيتم إقصاؤه.
+            </div>
             
             <div class="voting-options" id="votingOptions">
                 <!-- خيارات التصويت ستظهر هنا -->
@@ -707,38 +712,47 @@
                     <div id="voteResultsList"></div>
                 </div>
                 
-                <button id="revealSpyBtn" class="btn btn-danger" style="margin-top: 20px;">
-                    <i class="fas fa-user-secret"></i> كشف الجاسوس الحقيقي
+                <div id="eliminationResult" style="margin-top: 20px; padding: 15px; background: rgba(225, 112, 85, 0.1); border-radius: var(--border-radius);">
+                    <!-- نتيجة الإقصاء ستظهر هنا -->
+                </div>
+                
+                <button id="continueGameBtn" class="btn" style="margin-top: 20px;">
+                    <i class="fas fa-forward"></i> متابعة اللعبة
                 </button>
             </div>
             
-            <button id="backToGameBtn" class="btn" style="margin-top: 15px;">
+            <button id="backToGameBtn" class="btn" style="margin-top: 15px; display: none;">
                 <i class="fas fa-arrow-right"></i> العودة للعبة
             </button>
         </div>
         
-        <!-- شاشة النتائج -->
+        <!-- شاشة النتائج النهائية -->
         <div id="resultScreen" class="screen result-screen">
-            <div class="result-icon">
+            <div class="result-icon" id="resultIcon">
                 <i class="fas fa-trophy"></i>
             </div>
             
             <h2 class="result-title" id="resultTitle">الفريق المدني فاز!</h2>
             
             <div class="result-details">
-                <div style="margin-bottom: 15px;">
+                <div style="margin-bottom: 20px;">
                     <strong>الموقع السري:</strong> 
-                    <span id="finalLocation" style="color: var(--secondary-color); font-weight: bold;">مطعم</span>
+                    <span id="finalLocation" style="color: var(--secondary-color); font-weight: bold; font-size: 1.2rem;">مطعم</span>
                 </div>
                 
-                <div style="margin-bottom: 15px;">
+                <div style="margin-bottom: 20px;">
                     <strong>الجاسوس/الجواسيس:</strong>
-                    <div id="finalSpies" style="color: var(--danger-color); margin-top: 5px;"></div>
+                    <div id="finalSpies" style="color: var(--danger-color); margin-top: 5px; padding: 10px; background: rgba(225, 112, 85, 0.1); border-radius: 8px;"></div>
                 </div>
                 
-                <div>
+                <div style="margin-bottom: 10px;">
                     <strong>اللاعبون المدنيون:</strong>
                     <div id="finalCivilians" style="color: var(--secondary-color); margin-top: 5px;"></div>
+                </div>
+                
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <strong>المقصيون:</strong>
+                    <div id="finalEliminated" style="color: #aaa; margin-top: 5px; font-size: 0.9rem;"></div>
                 </div>
             </div>
             
@@ -755,7 +769,7 @@
         <div id="loaderScreen" class="loader">
             <div class="spinner"></div>
             <h3>يتم إعداد اللعبة...</h3>
-            <p id="loadingText" style="margin-top: 10px; color: #aaa;">جاري تعيين الأدوار بشكل عشوائي</p>
+            <p id="loadingText" style="margin-top: 10px; color: #aaa;">جاري تعيين الأدوار بشكل سري</p>
         </div>
     </div>
 
@@ -780,14 +794,17 @@
                 {name: "شاطئ", category: "ترفيه"},
                 {name: "مصنع", category: "عمل"}
             ],
-            spiesCount: 1,
+            spiesCount: 0,
             currentLocation: null,
             currentPlayerIndex: 0,
-            gameDuration: 5 * 60, // 5 دقائق بالثواني (سيتم تحديثها)
+            roundDuration: 5 * 60, // 5 دقائق بالثواني
             timerInterval: null,
             votingActive: false,
             votes: {},
-            selectedTime: 5 // دقائق
+            selectedTime: 5, // دقائق
+            eliminatedPlayers: [],
+            roundNumber: 1,
+            maxRounds: 10 // أقصى عدد جولات لمنع اللعب اللانهائي
         };
 
         // عناصر DOM
@@ -803,29 +820,30 @@
         const startGameBtn = document.getElementById('startGameBtn');
         const revealMissionBtn = document.getElementById('revealMissionBtn');
         const nextPlayerRoleBtn = document.getElementById('nextPlayerRoleBtn');
-        const skipToGameBtn = document.getElementById('skipToGameBtn');
         const startVotingBtn = document.getElementById('startVotingBtn');
         const endGameEarlyBtn = document.getElementById('endGameEarlyBtn');
-        const revealSpyBtn = document.getElementById('revealSpyBtn');
+        const continueGameBtn = document.getElementById('continueGameBtn');
         const backToGameBtn = document.getElementById('backToGameBtn');
         const newGameBtn = document.getElementById('newGameBtn');
         const backToSetupBtn = document.getElementById('backToSetupBtn');
         
         const currentPlayerName = document.getElementById('currentPlayerName');
-        const playerAvatar = document.getElementById('playerAvatar');
-        const playerRole = document.getElementById('playerRole');
         const missionContent = document.getElementById('missionContent');
-        const playersCount = document.getElementById('playersCount');
+        const alivePlayersCount = document.getElementById('alivePlayersCount');
         const spiesCount = document.getElementById('spiesCount');
         const timer = document.getElementById('timer');
+        const roundTime = document.getElementById('roundTime');
         const gamePlayersList = document.getElementById('gamePlayersList');
         const votingOptions = document.getElementById('votingOptions');
         const voteResult = document.getElementById('voteResult');
         const voteResultsList = document.getElementById('voteResultsList');
+        const eliminationResult = document.getElementById('eliminationResult');
+        const resultIcon = document.getElementById('resultIcon');
         const resultTitle = document.getElementById('resultTitle');
         const finalLocation = document.getElementById('finalLocation');
         const finalSpies = document.getElementById('finalSpies');
         const finalCivilians = document.getElementById('finalCivilians');
+        const finalEliminated = document.getElementById('finalEliminated');
         const loadingText = document.getElementById('loadingText');
 
         // تهيئة اللعبة
@@ -835,10 +853,9 @@
             startGameBtn.addEventListener('click', startGame);
             revealMissionBtn.addEventListener('click', revealMission);
             nextPlayerRoleBtn.addEventListener('click', showNextPlayerRole);
-            skipToGameBtn.addEventListener('click', skipToGame);
             startVotingBtn.addEventListener('click', startVoting);
             endGameEarlyBtn.addEventListener('click', endGame);
-            revealSpyBtn.addEventListener('click', revealSpyResult);
+            continueGameBtn.addEventListener('click', continueAfterVote);
             backToGameBtn.addEventListener('click', backToGameFromVoting);
             newGameBtn.addEventListener('click', newGame);
             backToSetupBtn.addEventListener('click', backToSetup);
@@ -850,13 +867,12 @@
                     timeOptions.forEach(opt => opt.classList.remove('selected'));
                     this.classList.add('selected');
                     gameData.selectedTime = parseInt(this.dataset.time);
+                    roundTime.textContent = gameData.selectedTime;
                 });
             });
             
             // تحديث أزرار إزالة اللاعبين
             updateRemoveButtons();
-            
-            // تحديث حالة زر بدء اللعبة
             updateStartButton();
             
             // إضافة مستمعات لحقول إدخال الأسماء
@@ -884,10 +900,8 @@
             
             playersContainer.appendChild(newInput);
             
-            // إضافة مستمع للحقل الجديد
             newInput.querySelector('.player-name-input').addEventListener('input', updateStartButton);
             
-            // إضافة مستمع لزر الإزالة
             newInput.querySelector('.remove-player').addEventListener('click', function() {
                 if (playerInputs.length > 3) {
                     newInput.remove();
@@ -943,58 +957,49 @@
                 if (name.length > 0) {
                     gameData.players.push({
                         name: name,
-                        role: 'civilian',
-                        isSpy: false,
-                        hasSeenMission: false
+                        role: 'civilian', // سري
+                        isSpy: false, // سري
+                        hasSeenMission: false,
+                        eliminated: false,
+                        votesReceived: 0
                     });
                 }
             });
             
-            // التحقق من عدد اللاعبين
             if (gameData.players.length < 3) {
                 alert('يجب إدخال 3 لاعبين على الأقل!');
                 return;
             }
             
-            // إخفاء شاشة الإعدادات وإظهار شاشة التحميل
             setupScreen.classList.remove('active');
             loaderScreen.classList.add('active');
             
-            // محاكاة عملية التحميل
             setTimeout(() => {
-                loadingText.textContent = 'جاري اختيار الموقع...';
+                loadingText.textContent = 'جاري اختيار الموقع السري...';
             }, 800);
             
             setTimeout(() => {
-                loadingText.textContent = 'جاري تعيين الجاسوس...';
+                loadingText.textContent = 'جاري تعيين الجاسوس بشكل سري...';
             }, 1600);
             
             setTimeout(() => {
-                // تعيين الأدوار
                 assignRoles();
+                gameData.roundDuration = gameData.selectedTime * 60;
+                roundTime.textContent = gameData.selectedTime;
                 
-                // إخفاء شاشة التحميل وإظهار شاشة عرض الأدوار
                 loaderScreen.classList.remove('active');
                 roleScreen.classList.add('active');
                 
-                // عرض دور اللاعب الأول
                 showPlayerRole(0);
-                
-                // تحديث عدادات اللعبة
                 updateGameCounters();
-                
-                // تعيين مدة اللعبة
-                gameData.gameDuration = gameData.selectedTime * 60;
             }, 2400);
         }
 
-        // تعيين الأدوار بشكل عشوائي
+        // تعيين الأدوار بشكل سري
         function assignRoles() {
-            // اختيار موقع عشوائي
             const randomIndex = Math.floor(Math.random() * gameData.locations.length);
             gameData.currentLocation = gameData.locations[randomIndex];
             
-            // حساب عدد الجواسيس
             if (gameData.players.length <= 5) {
                 gameData.spiesCount = 1;
             } else if (gameData.players.length <= 8) {
@@ -1003,7 +1008,6 @@
                 gameData.spiesCount = 3;
             }
             
-            // تعيين الجواسيس بشكل عشوائي
             const spyIndices = [];
             while (spyIndices.length < gameData.spiesCount) {
                 const randomIndex = Math.floor(Math.random() * gameData.players.length);
@@ -1012,7 +1016,6 @@
                 }
             }
             
-            // تطبيق الأدوار
             gameData.players.forEach((player, index) => {
                 if (spyIndices.includes(index)) {
                     player.role = 'spy';
@@ -1022,7 +1025,12 @@
                     player.isSpy = false;
                 }
                 player.hasSeenMission = false;
+                player.eliminated = false;
+                player.votesReceived = 0;
             });
+            
+            gameData.eliminatedPlayers = [];
+            gameData.roundNumber = 1;
         }
 
         // عرض دور لاعب معين
@@ -1030,27 +1038,16 @@
             const player = gameData.players[playerIndex];
             currentPlayerName.textContent = player.name;
             
-            // تحديث الصورة الرمزية بناءً على الدور
-            if (player.isSpy) {
-                playerAvatar.className = "player-avatar spy-avatar";
-                playerAvatar.innerHTML = '<i class="fas fa-user-secret"></i>';
-                playerRole.textContent = 'جاسوس';
-                playerRole.className = "player-role spy-role";
-            } else {
-                playerAvatar.className = "player-avatar";
-                playerAvatar.innerHTML = '<i class="fas fa-user"></i>';
-                playerRole.textContent = 'مواطن';
-                playerRole.className = "player-role civilian-role";
-            }
-            
-            // إعداد محتوى المهمة
             let missionHTML = '';
             if (player.hasSeenMission) {
                 if (player.isSpy) {
                     missionHTML = `
-                        <div class="spy-mission">
-                            <i class="fas fa-user-secret"></i>
-                            <div style="margin-top: 10px;">أنت الجاسوس! حاول معرفة الموقع دون أن تكتشف.</div>
+                        <div class="unknown-role">
+                            <i class="fas fa-user-secret" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <div style="margin-top: 10px;">أنت <strong>الجاسوس</strong>!</div>
+                            <div style="font-size: 1rem; color: #aaa; margin-top: 10px;">
+                                مهمتك: حاول معرفة الموقع السري دون أن تكتشف.
+                            </div>
                         </div>
                     `;
                 } else {
@@ -1059,7 +1056,7 @@
                             ${gameData.currentLocation.name}
                         </div>
                         <div style="margin-top: 10px; color: #aaa; font-size: 1rem;">
-                            ${gameData.currentLocation.category}
+                            أنت <strong>مواطن</strong>. هذا هو الموقع السري.
                         </div>
                     `;
                 }
@@ -1067,21 +1064,12 @@
                 revealMissionBtn.innerHTML = '<i class="fas fa-check"></i> تم الكشف';
                 revealMissionBtn.style.background = '#666';
             } else {
-                if (player.isSpy) {
-                    missionHTML = `
-                        <div class="hidden-mission" style="font-size: 1.3rem;">
-                            <i class="fas fa-user-secret"></i>
-                            <div style="margin-top: 10px;">اضغط على الزر أدناه لمعرفة مهمتك</div>
-                        </div>
-                    `;
-                } else {
-                    missionHTML = `
-                        <div class="hidden-mission">
-                            <div style="font-size: 2rem; margin-bottom: 5px;">؟ ؟ ؟</div>
-                            <div style="color: #aaa; font-size: 1rem;">اضغط على الزر أدناه لمعرفة الموقع</div>
-                        </div>
-                    `;
-                }
+                missionHTML = `
+                    <div class="hidden-mission">
+                        <div style="font-size: 2rem; margin-bottom: 5px;">؟ ؟ ؟</div>
+                        <div style="color: #aaa; font-size: 1rem;">اضغط على الزر أدناه لمعرفة مهمتك</div>
+                    </div>
+                `;
                 revealMissionBtn.disabled = false;
                 revealMissionBtn.innerHTML = '<i class="fas fa-eye"></i> كشف المهمة';
                 revealMissionBtn.style.background = '';
@@ -1090,18 +1078,12 @@
             
             missionContent.innerHTML = missionHTML;
             gameData.currentPlayerIndex = playerIndex;
-            
-            // إظهار زر التخطي إذا كان جميع اللاعبين قد شاهدوا مهامهم
-            const allSeen = gameData.players.every(p => p.hasSeenMission);
-            skipToGameBtn.style.display = allSeen ? 'block' : 'none';
         }
 
         // كشف المهمة للاعب الحالي
         function revealMission() {
             const player = gameData.players[gameData.currentPlayerIndex];
             player.hasSeenMission = true;
-            
-            // إعادة عرض دور اللاعب الحالي مع المهمة المكشوفة
             showPlayerRole(gameData.currentPlayerIndex);
         }
 
@@ -1112,14 +1094,8 @@
             if (nextIndex < gameData.players.length) {
                 showPlayerRole(nextIndex);
             } else {
-                // جميع اللاعبين شاهدوا أدوارهم، ابدأ اللعبة
                 startMainGame();
             }
-        }
-
-        // تخطي للعبة الرئيسية
-        function skipToGame() {
-            startMainGame();
         }
 
         // بدء اللعبة الرئيسية
@@ -1132,21 +1108,17 @@
 
         // بدء مؤقت اللعبة
         function startGameTimer() {
-            let timeLeft = gameData.gameDuration;
+            let timeLeft = gameData.roundDuration;
             
-            // تحديث المؤشر فوراً
             updateTimerDisplay(timeLeft);
             
-            // تحديث المؤشر كل ثانية
             gameData.timerInterval = setInterval(() => {
                 timeLeft--;
                 updateTimerDisplay(timeLeft);
                 
                 if (timeLeft <= 0) {
-                    // انتهى الوقت، ابدأ التصويت تلقائياً
                     startVoting();
                 } else if (timeLeft <= 30) {
-                    // تحذير عندما يتبقى 30 ثانية
                     timer.classList.add('time-warning');
                 }
             }, 1000);
@@ -1161,30 +1133,30 @@
 
         // تحديث عدادات اللعبة
         function updateGameCounters() {
-            playersCount.textContent = gameData.players.length;
-            spiesCount.textContent = gameData.spiesCount;
+            const alivePlayers = gameData.players.filter(p => !p.eliminated).length;
+            alivePlayersCount.textContent = alivePlayers;
+            spiesCount.textContent = '؟';
         }
 
-        // تحديث قائمة اللاعبين في شاشة اللعبة
+        // تحديث قائمة اللاعبين
         function updateGamePlayersList() {
             gamePlayersList.innerHTML = '';
             
-            gameData.players.forEach(player => {
+            gameData.players.forEach((player, index) => {
                 const playerItem = document.createElement('div');
-                playerItem.className = `player-item ${player.role}`;
+                playerItem.className = `player-item ${player.eliminated ? 'eliminated' : ''}`;
                 
-                const statusIcon = player.isSpy ? 
-                    '<i class="fas fa-user-secret" style="color: var(--danger-color);"></i>' : 
+                const statusIcon = player.eliminated ? 
+                    '<i class="fas fa-skull-crossbones" style="color: var(--danger-color);"></i>' : 
                     '<i class="fas fa-user" style="color: var(--secondary-color);"></i>';
                 
-                const seenStatus = player.hasSeenMission ? 
-                    '<span style="color: #4cd964; font-size: 0.8rem;"><i class="fas fa-check-circle"></i></span>' : 
-                    '<span style="color: #aaa; font-size: 0.8rem;"><i class="fas fa-eye-slash"></i></span>';
+                const eliminatedBadge = player.eliminated ? 
+                    '<span class="eliminated-count"><i class="fas fa-times"></i></span>' : '';
                 
                 playerItem.innerHTML = `
                     <div>
-                        <span>${player.name}</span>
-                        <span style="margin-right: 10px; font-size: 0.8rem; color: #aaa;">${seenStatus}</span>
+                        ${eliminatedBadge}
+                        <span class="${player.eliminated ? 'eliminated-player' : ''}">${player.name}</span>
                     </div>
                     <span>${statusIcon}</span>
                 `;
@@ -1194,7 +1166,6 @@
 
         // بدء التصويت
         function startVoting() {
-            // إيقاف المؤقت
             if (gameData.timerInterval) {
                 clearInterval(gameData.timerInterval);
             }
@@ -1202,15 +1173,11 @@
             gameData.votingActive = true;
             gameData.votes = {};
             
-            // إخفاء شاشة اللعبة وإظهار شاشة التصويت
             gameScreen.classList.remove('active');
             votingScreen.classList.add('active');
-            
-            // إعداد خيارات التصويت
             setupVotingOptions();
-            
-            // إخفاء نتائج التصويت السابقة
             voteResult.style.display = 'none';
+            backToGameBtn.style.display = 'none';
         }
 
         // إعداد خيارات التصويت
@@ -1218,33 +1185,29 @@
             votingOptions.innerHTML = '';
             
             gameData.players.forEach((player, index) => {
+                if (player.eliminated) return;
+                
                 const voteOption = document.createElement('div');
                 voteOption.className = 'vote-option';
                 voteOption.dataset.playerIndex = index;
                 
                 voteOption.innerHTML = `
                     <div style="font-size: 1.2rem; margin-bottom: 5px;">${player.name}</div>
-                    <div style="font-size: 0.9rem; color: ${player.isSpy ? 'var(--danger-color)' : 'var(--secondary-color)'}">
-                        ${player.isSpy ? 'جاسوس' : 'مواطن'}
+                    <div style="font-size: 0.9rem; color: #aaa">
+                        ${player.eliminated ? 'مقصي' : 'حي'}
                     </div>
-                    <div class="vote-count" style="display: none;">0</div>
                 `;
                 
                 voteOption.addEventListener('click', function() {
-                    if (!gameData.votingActive) return;
+                    if (!gameData.votingActive || player.eliminated) return;
                     
-                    // إزالة التحديد من جميع الخيارات
                     document.querySelectorAll('.vote-option').forEach(opt => {
                         opt.classList.remove('selected');
                     });
                     
-                    // تحديد الخيار الحالي
                     this.classList.add('selected');
-                    
-                    // تسجيل التصويت
                     gameData.votes['player'] = index;
                     
-                    // عرض زر التصويت
                     const existingVoteBtn = document.getElementById('submitVoteBtn');
                     if (existingVoteBtn) existingVoteBtn.remove();
                     
@@ -1272,19 +1235,30 @@
             
             gameData.votingActive = false;
             
-            // حساب نتائج التصويت (محاكاة)
+            // محاكاة تصويت باقي اللاعبين
             const voteResults = {};
             gameData.players.forEach((player, index) => {
-                // في اللعبة الحقيقية، سيتم جمع الأصوات من جميع اللاعبين
-                // هنا سنقوم بمحاكاة التصويت
-                if (index === gameData.votes['player']) {
-                    voteResults[index] = Math.floor(Math.random() * 3) + 2; // 2-4 أصوات
-                } else {
-                    voteResults[index] = Math.floor(Math.random() * 2); // 0-1 أصوات
+                if (player.eliminated) {
+                    voteResults[index] = 0;
+                    return;
                 }
+                
+                let votes = 0;
+                
+                // تصويت اللاعب الحالي
+                if (index === gameData.votes['player']) {
+                    votes += 1;
+                }
+                
+                // محاكاة تصويت اللاعبين الآخرين
+                const alivePlayers = gameData.players.filter(p => !p.eliminated).length;
+                const randomVotes = Math.floor(Math.random() * (alivePlayers - 1));
+                votes += randomVotes;
+                
+                voteResults[index] = votes;
+                player.votesReceived = votes;
             });
             
-            // عرض نتائج التصويت
             displayVoteResults(voteResults);
         }
 
@@ -1293,32 +1267,79 @@
             voteResultsList.innerHTML = '';
             
             let maxVotes = 0;
-            let suspectedSpyIndex = 0;
+            let eliminatedPlayerIndex = null;
+            let tie = false;
+            const tiedPlayers = [];
             
-            // حساب اللاعب الذي حصل على أعلى تصويت
+            // إيجاد اللاعب الأكثر تصويتاً
             Object.keys(voteResults).forEach(index => {
                 const votes = voteResults[index];
+                const player = gameData.players[index];
+                
+                if (player.eliminated) return;
+                
                 if (votes > maxVotes) {
                     maxVotes = votes;
-                    suspectedSpyIndex = parseInt(index);
+                    eliminatedPlayerIndex = parseInt(index);
+                    tie = false;
+                    tiedPlayers.length = 0;
+                    tiedPlayers.push(parseInt(index));
+                } else if (votes === maxVotes && votes > 0) {
+                    tie = true;
+                    tiedPlayers.push(parseInt(index));
                 }
+            });
+            
+            // عرض النتائج
+            gameData.players.forEach((player, index) => {
+                if (player.eliminated) return;
                 
-                const player = gameData.players[index];
+                const votes = voteResults[index] || 0;
                 const resultItem = document.createElement('div');
                 resultItem.className = 'vote-result-item';
+                
+                let playerName = player.name;
+                if (tiedPlayers.includes(index)) {
+                    playerName += " (تعادل)";
+                }
+                
                 resultItem.innerHTML = `
-                    <span>${player.name}</span>
+                    <span>${playerName}</span>
                     <span style="color: var(--accent-color); font-weight: bold;">${votes} صوت</span>
                 `;
                 voteResultsList.appendChild(resultItem);
-                
-                // تحديث عداد الأصوات على خيار التصويت
-                const voteCountElement = document.querySelector(`.vote-option[data-player-index="${index}"] .vote-count`);
-                if (voteCountElement) {
-                    voteCountElement.textContent = votes;
-                    voteCountElement.style.display = 'inline-block';
-                }
             });
+            
+            // إذا كان هناك تعادل، اختيار عشوائي
+            if (tie && tiedPlayers.length > 1) {
+                eliminatedPlayerIndex = tiedPlayers[Math.floor(Math.random() * tiedPlayers.length)];
+            }
+            
+            const eliminatedPlayer = gameData.players[eliminatedPlayerIndex];
+            
+            // عرض نتيجة الإقصاء
+            eliminationResult.innerHTML = '';
+            if (eliminatedPlayer) {
+                eliminatedPlayer.eliminated = true;
+                gameData.eliminatedPlayers.push(eliminatedPlayer.name);
+                
+                let resultMessage = '';
+                if (eliminatedPlayer.isSpy) {
+                    resultMessage = `
+                        <i class="fas fa-check-circle" style="color: var(--secondary-color); font-size: 1.5rem;"></i>
+                        <h3 style="color: var(--secondary-color); margin: 10px 0;">تم إقصاء الجاسوس!</h3>
+                        <p>${eliminatedPlayer.name} كان جاسوساً! الفريق المدني يفوز!</p>
+                    `;
+                } else {
+                    resultMessage = `
+                        <i class="fas fa-times-circle" style="color: var(--danger-color); font-size: 1.5rem;"></i>
+                        <h3 style="color: var(--danger-color); margin: 10px 0;">تم إقصاء مواطن!</h3>
+                        <p>${eliminatedPlayer.name} كان مواطناً بريئاً! تستمر اللعبة...</p>
+                    `;
+                }
+                
+                eliminationResult.innerHTML = resultMessage;
+            }
             
             // إخفاء زر تأكيد التصويت
             const submitVoteBtn = document.getElementById('submitVoteBtn');
@@ -1327,102 +1348,112 @@
             // إظهار قسم النتائج
             voteResult.style.display = 'block';
             
-            // إظهار اللاعب المشتبه به
-            const suspectedPlayer = gameData.players[suspectedSpyIndex];
-            const resultMessage = document.createElement('div');
-            resultMessage.style.marginTop = '15px';
-            resultMessage.style.padding = '15px';
-            resultMessage.style.background = 'rgba(253, 203, 110, 0.1)';
-            resultMessage.style.borderRadius = 'var(--border-radius)';
-            resultMessage.innerHTML = `
-                <i class="fas fa-exclamation-triangle" style="color: var(--warning-color);"></i>
-                <strong> اللاعب ${suspectedPlayer.name} حصل على أعلى الأصوات!</strong>
-            `;
-            
-            voteResultsList.parentNode.insertBefore(resultMessage, voteResultsList.nextSibling);
+            // التحقق من نهاية اللعبة
+            checkGameEnd();
         }
 
-        // كشف الجاسوس الحقيقي بعد التصويت
-        function revealSpyResult() {
-            votingScreen.classList.remove('active');
-            resultScreen.classList.add('active');
+        // التحقق من نهاية اللعبة
+        function checkGameEnd() {
+            const alivePlayers = gameData.players.filter(p => !p.eliminated);
+            const aliveSpies = alivePlayers.filter(p => p.isSpy);
+            const aliveCivilians = alivePlayers.filter(p => !p.isSpy);
             
-            // تحديد الفائز
-            const spies = gameData.players.filter(player => player.isSpy);
-            const spyNames = spies.map(spy => spy.name).join('، ');
-            
-            // في لعبة حقيقية، ستحدد إذا كان التصويت صحيحاً
-            // هنا سنفترض أن الفريق المدني فاز إذا كان عدد الجواسيس 1 فقط
-            let civiliansWon = true;
-            
-            if (gameData.spiesCount === 1) {
-                // فرصة 50% للفوز
-                civiliansWon = Math.random() > 0.5;
-            } else {
-                // مع جواسيس متعددين، من الصعب على المدنيين الفوز
-                civiliansWon = Math.random() > 0.7;
+            // حالة الفوز: لا يوجد جواسيس أحياء
+            if (aliveSpies.length === 0) {
+                setTimeout(() => {
+                    showFinalResults(true); // المدنيون فازوا
+                }, 2000);
+                return;
             }
             
-            if (civiliansWon) {
-                resultTitle.textContent = "الفريق المدني فاز!";
-                resultTitle.className = "result-title civilian-wins";
-                resultScreen.querySelector('.result-icon').innerHTML = '<i class="fas fa-users"></i>';
-                resultScreen.querySelector('.result-icon').style.color = 'var(--secondary-color)';
-            } else {
-                resultTitle.textContent = "الجواسيس فازوا!";
-                resultTitle.className = "result-title spy-wins";
-                resultScreen.querySelector('.result-icon').innerHTML = '<i class="fas fa-user-secret"></i>';
-                resultScreen.querySelector('.result-icon').style.color = 'var(--danger-color)';
+            // حالة الخسارة: عدد الجواسيس >= عدد المدنيين
+            if (aliveSpies.length >= aliveCivilians.length) {
+                setTimeout(() => {
+                    showFinalResults(false); // الجواسيس فازوا
+                }, 2000);
+                return;
             }
             
-            // عرض التفاصيل
-            finalLocation.textContent = gameData.currentLocation.name;
-            
-            const civilians = gameData.players.filter(player => !player.isSpy);
-            const civilianNames = civilians.map(c => c.name).join('، ');
-            
-            finalSpies.innerHTML = spyNames;
-            finalCivilians.innerHTML = civilianNames;
+            // حالة استمرار اللعبة: زيادة عدد الجولة
+            gameData.roundNumber++;
+            if (gameData.roundNumber > gameData.maxRounds) {
+                setTimeout(() => {
+                    showFinalResults(false); // الجواسيس فازوا (بعد الحد الأقصى للجولات)
+                }, 2000);
+                return;
+            }
         }
 
-        // العودة للعبة من شاشة التصويت
-        function backToGameFromVoting() {
+        // متابعة اللعبة بعد التصويت
+        function continueAfterVote() {
+            const alivePlayers = gameData.players.filter(p => !p.eliminated);
+            const aliveSpies = alivePlayers.filter(p => p.isSpy);
+            
+            // إذا تم إقصاء الجاسوس، نهاية اللعبة
+            if (aliveSpies.length === 0) {
+                showFinalResults(true);
+                return;
+            }
+            
+            // إعادة تعيين المؤقت ومواصلة اللعبة
+            gameData.roundDuration = gameData.selectedTime * 60;
+            
             votingScreen.classList.remove('active');
             gameScreen.classList.add('active');
             
-            // استئناف المؤقت إذا كان لا يزال هناك وقت
-            if (gameData.gameDuration > 0) {
-                startGameTimer();
+            updateGameCounters();
+            updateGamePlayersList();
+            startGameTimer();
+        }
+
+        // عرض النتائج النهائية
+        function showFinalResults(civiliansWon) {
+            votingScreen.classList.remove('active');
+            gameScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+            
+            const spies = gameData.players.filter(p => p.isSpy);
+            const civilians = gameData.players.filter(p => !p.isSpy && !p.eliminated);
+            const eliminated = gameData.players.filter(p => p.eliminated);
+            
+            if (civiliansWon) {
+                resultTitle.textContent = "🎉 الفريق المدني فاز!";
+                resultTitle.className = "result-title civilian-wins";
+                resultIcon.innerHTML = '<i class="fas fa-users"></i>';
+                resultIcon.style.color = 'var(--secondary-color)';
+            } else {
+                resultTitle.textContent = "🕵️ الجواسيس فازوا!";
+                resultTitle.className = "result-title spy-wins";
+                resultIcon.innerHTML = '<i class="fas fa-user-secret"></i>';
+                resultIcon.style.color = 'var(--danger-color)';
             }
+            
+            finalLocation.textContent = gameData.currentLocation.name;
+            
+            const spyNames = spies.map(s => `${s.name} ${s.eliminated ? '(مقصي)' : ''}`).join('، ');
+            const civilianNames = civilians.map(c => c.name).join('، ');
+            const eliminatedNames = eliminated.map(e => e.name).join('، ');
+            
+            finalSpies.innerHTML = spyNames;
+            finalCivilians.innerHTML = civilianNames || "لا يوجد";
+            finalEliminated.innerHTML = eliminatedNames || "لا يوجد";
         }
 
         // إنهاء اللعبة
         function endGame() {
-            // إيقاف المؤقت
             if (gameData.timerInterval) {
                 clearInterval(gameData.timerInterval);
             }
             
-            // الانتقال لشاشة النتائج مباشرة
-            gameScreen.classList.remove('active');
-            resultScreen.classList.add('active');
-            
-            // عرض النتيجة النهائية
-            const spies = gameData.players.filter(player => player.isSpy);
-            const spyNames = spies.map(spy => spy.name).join('، ');
-            
-            resultTitle.textContent = "انتهت اللعبة!";
-            resultTitle.className = "result-title";
-            resultScreen.querySelector('.result-icon').innerHTML = '<i class="fas fa-flag-checkered"></i>';
-            resultScreen.querySelector('.result-icon').style.color = 'var(--accent-color)';
-            
-            finalLocation.textContent = gameData.currentLocation.name;
-            
-            const civilians = gameData.players.filter(player => !player.isSpy);
-            const civilianNames = civilians.map(c => c.name).join('، ');
-            
-            finalSpies.innerHTML = spyNames;
-            finalCivilians.innerHTML = civilianNames;
+            // في حالة الإنهاء المبكر، الجواسيس يفوزون
+            showFinalResults(false);
+        }
+
+        // العودة للعبة من شاشة التصويت (قبل التصويت)
+        function backToGameFromVoting() {
+            votingScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            startGameTimer();
         }
 
         // بدء لعبة جديدة
@@ -1430,15 +1461,11 @@
             resultScreen.classList.remove('active');
             roleScreen.classList.add('active');
             
-            // إعادة تعيين حالة مشاهد المهام
             gameData.players.forEach(player => {
                 player.hasSeenMission = false;
             });
             
-            // اختيار موقع جديد وتعيين أدوار جديدة
             assignRoles();
-            
-            // عرض دور اللاعب الأول
             showPlayerRole(0);
         }
 
@@ -1447,11 +1474,9 @@
             resultScreen.classList.remove('active');
             setupScreen.classList.add('active');
             
-            // إعادة تعيين بيانات اللعبة
             gameData.players = [];
             gameData.currentLocation = null;
             
-            // تحديث أزرار إزالة اللاعبين
             updateRemoveButtons();
             updateStartButton();
         }
