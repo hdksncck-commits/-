@@ -1,134 +1,811 @@
-<!DOCTYPE html><html lang="ar">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>اكتشف الجاسوس</title>
-  <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    body {
-      margin: 0;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #fff;
-    }
-    .app {
-      width: 100%;
-      max-width: 390px;
-      height: 100vh;
-      background: #111;
-      border-radius: 20px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-    }
-    h1 { text-align: center; margin-bottom: 10px; }
-    .screen { flex: 1; display: none; justify-content: center; align-items: center; flex-direction: column; }
-    .screen.active { display: flex; }
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 12px;
-      background: #1e90ff;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:active { transform: scale(0.97); }
-    input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      margin-top: 8px;
-      font-size: 16px;
-    }
-    .question {
-      background: #1c1c1c;
-      padding: 16px;
-      border-radius: 14px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .footer { text-align: center; font-size: 12px; opacity: 0.6; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الجاسوس - Spy Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary-color: #2d3436;
+            --secondary-color: #00b894;
+            --accent-color: #fd79a8;
+            --danger-color: #e17055;
+            --light-color: #f9f9f9;
+            --dark-color: #2d3436;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: var(--light-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 10px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            color: var(--secondary-color);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            color: #aaa;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        
+        /* الشاشات المختلفة */
+        .screen {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* شاشة الإعدادات */
+        .player-input-container {
+            margin-bottom: 20px;
+        }
+        
+        .player-input {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .player-input input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            margin-left: 10px;
+        }
+        
+        .player-input input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .remove-player {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .add-player-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-top: 10px;
+            transition: var(--transition);
+        }
+        
+        .add-player-btn:hover {
+            background: #00a085;
+            transform: translateY(-2px);
+        }
+        
+        .add-player-btn i {
+            margin-left: 8px;
+        }
+        
+        /* شاشة الأدوار */
+        .role-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .role-icon {
+            font-size: 4rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+        
+        .player-name {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .role-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background: rgba(0, 184, 148, 0.1);
+            border: 2px dashed var(--secondary-color);
+        }
+        
+        .spy {
+            color: var(--danger-color);
+            background: rgba(225, 112, 85, 0.1) !important;
+            border-color: var(--danger-color) !important;
+        }
+        
+        /* شاشة اللعبة */
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .location-display {
+            background: rgba(0, 184, 148, 0.15);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 25px 0;
+            text-align: center;
+            border: 1px solid rgba(0, 184, 148, 0.3);
+        }
+        
+        .location-title {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .location-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        /* الأزرار */
+        .btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn:hover {
+            background: #00a085;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-danger {
+            background: var(--danger-color);
+        }
+        
+        .btn-danger:hover {
+            background: #d65c3e;
+        }
+        
+        .btn i {
+            margin-left: 8px;
+        }
+        
+        /* القائمة الجانبية */
+        .players-list {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        
+        .player-item.spy {
+            border-right: 4px solid var(--danger-color);
+        }
+        
+        .player-item.civilian {
+            border-right: 4px solid var(--secondary-color);
+        }
+        
+        /* التكيف مع الشاشات الصغيرة */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .screen {
+                padding: 20px 15px;
+            }
+            
+            .role-title {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* التحميل */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .loader.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .logo {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-  <div class="app">
-    <h1>🕵️ اكتشف الجاسوس</h1><!-- Start Screen -->
-<div class="screen active" id="start">
-  <p>لعبة جماعية – واحد فيكم جاسوس 👀</p>
-  <input type="number" id="players" placeholder="عدد اللاعبين" />
-  <button onclick="startGame()">ابدأ اللعب</button>
-</div>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-user-secret"></i>
+            </div>
+            <h1>لعبة الجاسوس</h1>
+            <p class="subtitle">ادخل أسماء اللاعبين وابدأ اللعبة المشوقة!</p>
+        </header>
+        
+        <!-- شاشة إضافة اللاعبين -->
+        <div id="setupScreen" class="screen active">
+            <h2><i class="fas fa-users"></i> إضافة اللاعبين</h2>
+            <p style="margin: 15px 0 25px; color: #ccc;">أدخل أسماء اللاعبين (يجب أن يكونوا 3 على الأقل)</p>
+            
+            <div class="player-input-container" id="playersContainer">
+                <!-- سيتم إضافة حقول اللاعبين هنا ديناميكيًا -->
+                <div class="player-input">
+                    <input type="text" class="player-name-input" placeholder="اسم اللاعب الأول" maxlength="15">
+                    <button class="remove-player" style="display: none;"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="player-input">
+                    <input type="text" class="player-name-input" placeholder="اسم اللاعب الثاني" maxlength="15">
+                    <button class="remove-player" style="display: none;"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="player-input">
+                    <input type="text" class="player-name-input" placeholder="اسم اللاعب الثالث" maxlength="15">
+                    <button class="remove-player" style="display: none;"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            
+            <button id="addPlayerBtn" class="add-player-btn">
+                <i class="fas fa-plus"></i> إضافة لاعب جديد
+            </button>
+            
+            <button id="startGameBtn" class="btn">
+                بدء اللعبة <i class="fas fa-play"></i>
+            </button>
+        </div>
+        
+        <!-- شاشة عرض الدور -->
+        <div id="roleScreen" class="screen">
+            <div class="role-display">
+                <div class="role-icon">
+                    <i class="fas fa-user-secret"></i>
+                </div>
+                <div class="player-name" id="currentPlayerName">محمد</div>
+                <div class="role-title" id="roleText">مواطن</div>
+                <p id="roleDescription" style="margin-top: 20px; line-height: 1.6; color: #ccc;">
+                    مهمتك هي معرفة من هو الجاسوس قبل انتهاء الوقت. استخدم أسئلتك الذكية لاكتشافه!
+                </p>
+            </div>
+            
+            <button id="nextPlayerBtn" class="btn">
+                التالي <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        
+        <!-- شاشة اللعبة الرئيسية -->
+        <div id="gameScreen" class="screen">
+            <div class="game-info">
+                <div class="info-item">
+                    <div class="info-label">اللاعبين</div>
+                    <div class="info-value" id="playersCount">5</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">الجواسيس</div>
+                    <div class="info-value" id="spiesCount">1</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">الوقت</div>
+                    <div class="info-value" id="timer">05:00</div>
+                </div>
+            </div>
+            
+            <div class="location-display">
+                <div class="location-title">الموقع السري</div>
+                <div class="location-name" id="locationName">مطعم</div>
+            </div>
+            
+            <p style="text-align: center; margin: 25px 0; line-height: 1.6; color: #ccc;">
+                <i class="fas fa-info-circle" style="color: var(--secondary-color); margin-left: 5px;"></i>
+                ابدأوا المناقشة لاكتشاف الجاسوس! الجاسوس لا يعرف الموقع ويحاول تخمينه.
+            </p>
+            
+            <div class="players-list" id="gamePlayersList">
+                <!-- قائمة اللاعبين في اللعبة -->
+            </div>
+            
+            <button id="revealSpyBtn" class="btn btn-danger">
+                كشف الجاسوس <i class="fas fa-user-secret"></i>
+            </button>
+            
+            <button id="endGameBtn" class="btn">
+                إنهاء اللعبة <i class="fas fa-stop"></i>
+            </button>
+        </div>
+        
+        <!-- شاشة التحميل -->
+        <div id="loaderScreen" class="loader">
+            <div class="spinner"></div>
+            <h3>يتم إعداد اللعبة...</h3>
+            <p id="loadingText" style="margin-top: 10px; color: #aaa;">جاري تعيين الأدوار بشكل عشوائي</p>
+        </div>
+    </div>
 
-<!-- Question Screen -->
-<div class="screen" id="questionScreen">
-  <div class="question" id="question"></div>
-  <button onclick="nextPlayer()">التالي</button>
-</div>
+    <script>
+        // بيانات اللعبة
+        const gameData = {
+            players: [],
+            locations: [
+                "مطعم", "مستشفى", "مدرسة", "حديقة", "مكتبة", 
+                "مطار", "فندق", "سوبرماركت", "بنك", "ملعب",
+                "سينما", "متحف", "مقهى", "شاطئ", "مصنع"
+            ],
+            spiesCount: 1,
+            currentLocation: "",
+            currentPlayerIndex: 0,
+            gameDuration: 5 * 60, // 5 دقائق بالثواني
+            timerInterval: null
+        };
 
-<!-- End Screen -->
-<div class="screen" id="end">
-  <h2>🧠 ناقشوا وحددوا الجاسوس!</h2>
-  <p>مين فيكم شكله جاسوس؟ 😏</p>
-  <button onclick="resetGame()">إعادة اللعب</button>
-</div>
+        // عناصر DOM
+        const setupScreen = document.getElementById('setupScreen');
+        const roleScreen = document.getElementById('roleScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const loaderScreen = document.getElementById('loaderScreen');
+        
+        const playersContainer = document.getElementById('playersContainer');
+        const addPlayerBtn = document.getElementById('addPlayerBtn');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const nextPlayerBtn = document.getElementById('nextPlayerBtn');
+        const revealSpyBtn = document.getElementById('revealSpyBtn');
+        const endGameBtn = document.getElementById('endGameBtn');
+        
+        const currentPlayerName = document.getElementById('currentPlayerName');
+        const roleText = document.getElementById('roleText');
+        const roleDescription = document.getElementById('roleDescription');
+        const playersCount = document.getElementById('playersCount');
+        const spiesCount = document.getElementById('spiesCount');
+        const timer = document.getElementById('timer');
+        const locationName = document.getElementById('locationName');
+        const gamePlayersList = document.getElementById('gamePlayersList');
+        const loadingText = document.getElementById('loadingText');
 
-<div class="footer">Made like a real app 📱</div>
+        // تهيئة اللعبة
+        document.addEventListener('DOMContentLoaded', function() {
+            // إضافة مستمعين للأحداث
+            addPlayerBtn.addEventListener('click', addPlayerInput);
+            startGameBtn.addEventListener('click', startGame);
+            nextPlayerBtn.addEventListener('click', showNextPlayerRole);
+            revealSpyBtn.addEventListener('click', revealSpy);
+            endGameBtn.addEventListener('click', endGame);
+            
+            // تحديث أزرار إزالة اللاعبين
+            updateRemoveButtons();
+            
+            // تحديث حالة زر بدء اللعبة
+            updateStartButton();
+            
+            // إضافة مستمعات لحقول إدخال الأسماء
+            const nameInputs = document.querySelectorAll('.player-name-input');
+            nameInputs.forEach(input => {
+                input.addEventListener('input', updateStartButton);
+            });
+        });
 
-  </div>  <script>
-    const questions = [
-      "بتعمل ايه اول ما تصحى؟",
-      "ايه اكتر مكان بتحب تروحه؟",
-      "لو معاك يوم فاضي تعمل ايه؟",
-      "تحب الشغل الجماعي ولا لوحدك؟",
-      "ايه اكتر حاجه بتخوفك؟"
-    ];
+        // إضافة حقل لاعب جديد
+        function addPlayerInput() {
+            const playerInputs = playersContainer.querySelectorAll('.player-input');
+            if (playerInputs.length >= 10) {
+                alert('الحد الأقصى هو 10 لاعبين');
+                return;
+            }
+            
+            const newIndex = playerInputs.length + 1;
+            const newInput = document.createElement('div');
+            newInput.className = 'player-input';
+            newInput.innerHTML = `
+                <input type="text" class="player-name-input" placeholder="اسم اللاعب ${newIndex}" maxlength="15">
+                <button class="remove-player"><i class="fas fa-times"></i></button>
+            `;
+            
+            playersContainer.appendChild(newInput);
+            
+            // إضافة مستمع للحقل الجديد
+            newInput.querySelector('.player-name-input').addEventListener('input', updateStartButton);
+            
+            // إضافة مستمع لزر الإزالة
+            newInput.querySelector('.remove-player').addEventListener('click', function() {
+                if (playerInputs.length > 3) {
+                    newInput.remove();
+                    updateRemoveButtons();
+                    updateStartButton();
+                }
+            });
+            
+            updateRemoveButtons();
+            updateStartButton();
+        }
 
-    let playersCount = 0;
-    let spyIndex = 0;
-    let currentPlayer = 0;
+        // تحديث أزرار إزالة اللاعبين (إظهارها فقط إذا كان هناك أكثر من 3 لاعبين)
+        function updateRemoveButtons() {
+            const playerInputs = playersContainer.querySelectorAll('.player-input');
+            const removeButtons = playersContainer.querySelectorAll('.remove-player');
+            
+            if (playerInputs.length > 3) {
+                removeButtons.forEach(btn => {
+                    btn.style.display = 'flex';
+                });
+            } else {
+                removeButtons.forEach(btn => {
+                    btn.style.display = 'none';
+                });
+            }
+        }
 
-    function startGame() {
-      playersCount = parseInt(document.getElementById('players').value);
-      if (!playersCount || playersCount < 3) {
-        alert('لازم 3 لاعبين على الأقل');
-        return;
-      }
-      spyIndex = Math.floor(Math.random() * playersCount);
-      currentPlayer = 0;
-      showScreen('questionScreen');
-      showQuestion();
-    }
+        // تحديث حالة زر بدء اللعبة (مفعل إذا كان هناك 3 لاعبين على الأقل بأسماء)
+        function updateStartButton() {
+            const playerInputs = playersContainer.querySelectorAll('.player-name-input');
+            let validPlayers = 0;
+            
+            playerInputs.forEach(input => {
+                if (input.value.trim().length > 0) {
+                    validPlayers++;
+                }
+            });
+            
+            startGameBtn.disabled = validPlayers < 3;
+            startGameBtn.style.opacity = validPlayers < 3 ? '0.6' : '1';
+            startGameBtn.style.cursor = validPlayers < 3 ? 'not-allowed' : 'pointer';
+        }
 
-    function showQuestion() {
-      const q = (currentPlayer === spyIndex)
-        ? '❓ انت الجاسوس.. جاوب بحذر'
-        : questions[Math.floor(Math.random() * questions.length)];
-      document.getElementById('question').innerText = `اللاعب ${currentPlayer + 1}:\n${q}`;
-    }
+        // بدء اللعبة
+        function startGame() {
+            // جمع أسماء اللاعبين
+            gameData.players = [];
+            const playerInputs = playersContainer.querySelectorAll('.player-name-input');
+            
+            playerInputs.forEach(input => {
+                const name = input.value.trim();
+                if (name.length > 0) {
+                    gameData.players.push({
+                        name: name,
+                        role: 'civilian', // سيتم تحديثه لاحقًا
+                        isSpy: false
+                    });
+                }
+            });
+            
+            // التحقق من عدد اللاعبين
+            if (gameData.players.length < 3) {
+                alert('يجب إدخال 3 لاعبين على الأقل!');
+                return;
+            }
+            
+            // إخفاء شاشة الإعدادات وإظهار شاشة التحميل
+            setupScreen.classList.remove('active');
+            loaderScreen.classList.add('active');
+            
+            // محاكاة عملية التحميل
+            setTimeout(() => {
+                loadingText.textContent = 'جاري اختيار الموقع...';
+            }, 800);
+            
+            setTimeout(() => {
+                loadingText.textContent = 'جاري تعيين الجاسوس...';
+            }, 1600);
+            
+            setTimeout(() => {
+                // تعيين الأدوار
+                assignRoles();
+                
+                // إخفاء شاشة التحميل وإظهار شاشة عرض الأدوار
+                loaderScreen.classList.remove('active');
+                roleScreen.classList.add('active');
+                
+                // عرض دور اللاعب الأول
+                showPlayerRole(0);
+                
+                // تحديث عدادات اللعبة
+                updateGameCounters();
+            }, 2400);
+        }
 
-    function nextPlayer() {
-      currentPlayer++;
-      if (currentPlayer >= playersCount) {
-        showScreen('end');
-      } else {
-        showQuestion();
-      }
-    }
+        // تعيين الأدوار بشكل عشوائي
+        function assignRoles() {
+            // اختيار موقع عشوائي
+            const randomIndex = Math.floor(Math.random() * gameData.locations.length);
+            gameData.currentLocation = gameData.locations[randomIndex];
+            
+            // حساب عدد الجواسيس (واحد لكل 3-5 لاعبين، اثنان لـ 6-8 لاعبين، ثلاثة لـ 9-10 لاعبين)
+            if (gameData.players.length <= 5) {
+                gameData.spiesCount = 1;
+            } else if (gameData.players.length <= 8) {
+                gameData.spiesCount = 2;
+            } else {
+                gameData.spiesCount = 3;
+            }
+            
+            // تعيين الجواسيس بشكل عشوائي
+            const spyIndices = [];
+            while (spyIndices.length < gameData.spiesCount) {
+                const randomIndex = Math.floor(Math.random() * gameData.players.length);
+                if (!spyIndices.includes(randomIndex)) {
+                    spyIndices.push(randomIndex);
+                }
+            }
+            
+            // تطبيق الأدوار
+            gameData.players.forEach((player, index) => {
+                if (spyIndices.includes(index)) {
+                    player.role = 'spy';
+                    player.isSpy = true;
+                } else {
+                    player.role = 'civilian';
+                    player.isSpy = false;
+                }
+            });
+        }
 
-    function resetGame() {
-      showScreen('start');
-    }
+        // عرض دور لاعب معين
+        function showPlayerRole(playerIndex) {
+            const player = gameData.players[playerIndex];
+            currentPlayerName.textContent = player.name;
+            
+            if (player.isSpy) {
+                roleText.textContent = 'جاسوس';
+                roleText.classList.add('spy');
+                roleDescription.textContent = 'أنت الجاسوس! مهمتك هي معرفة الموقع السري دون أن يكتشفك الآخرون. حاول أن تكون ذكياً في أسئلتك.';
+            } else {
+                roleText.textContent = 'مواطن';
+                roleText.classList.remove('spy');
+                roleDescription.textContent = `الموقع السري هو: ${gameData.currentLocation}. مهمتك هي اكتشاف من هو الجاسوس قبل انتهاء الوقت. استخدم أسئلتك الذكية لاكتشافه!`;
+            }
+            
+            gameData.currentPlayerIndex = playerIndex;
+            
+            // تحديث نص الزر إذا كان هذا آخر لاعب
+            if (playerIndex === gameData.players.length - 1) {
+                nextPlayerBtn.innerHTML = 'بدء اللعبة <i class="fas fa-play"></i>';
+            } else {
+                nextPlayerBtn.innerHTML = 'التالي <i class="fas fa-arrow-left"></i>';
+            }
+        }
 
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-  </script></body>
+        // عرض دور اللاعب التالي
+        function showNextPlayerRole() {
+            const nextIndex = gameData.currentPlayerIndex + 1;
+            
+            if (nextIndex < gameData.players.length) {
+                showPlayerRole(nextIndex);
+            } else {
+                // بدء اللعبة بعد عرض أدوار جميع اللاعبين
+                roleScreen.classList.remove('active');
+                gameScreen.classList.add('active');
+                startGameTimer();
+                updateGamePlayersList();
+            }
+        }
+
+        // بدء مؤقت اللعبة
+        function startGameTimer() {
+            let timeLeft = gameData.gameDuration;
+            
+            // تحديث المؤشر فوراً
+            updateTimerDisplay(timeLeft);
+            
+            // تحديث المؤشر كل ثانية
+            gameData.timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay(timeLeft);
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // تحديث عرض المؤقت
+        function updateTimerDisplay(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            timer.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            
+            // تغيير اللون عندما يقل الوقت عن دقيقة واحدة
+            if (seconds < 60) {
+                timer.style.color = 'var(--danger-color)';
+            } else if (seconds < 120) {
+                timer.style.color = '#ff9f43';
+            } else {
+                timer.style.color = 'var(--secondary-color)';
+            }
+        }
+
+        // تحديث عدادات اللعبة
+        function updateGameCounters() {
+            playersCount.textContent = gameData.players.length;
+            spiesCount.textContent = gameData.spiesCount;
+            locationName.textContent = gameData.currentLocation;
+        }
+
+        // تحديث قائمة اللاعبين في شاشة اللعبة
+        function updateGamePlayersList() {
+            gamePlayersList.innerHTML = '';
+            
+            gameData.players.forEach(player => {
+                const playerItem = document.createElement('div');
+                playerItem.className = `player-item ${player.role}`;
+                playerItem.innerHTML = `
+                    <span>${player.name}</span>
+                    <span>
+                        ${player.isSpy ? 
+                            '<i class="fas fa-user-secret" style="color: var(--danger-color);"></i>' : 
+                            '<i class="fas fa-user" style="color: var(--secondary-color);"></i>'}
+                    </span>
+                `;
+                gamePlayersList.appendChild(playerItem);
+            });
+        }
+
+        // كشف الجاسوس (للاستخدام من قبل المسؤول)
+        function revealSpy() {
+            const spies = gameData.players.filter(player => player.isSpy);
+            const spyNames = spies.map(spy => spy.name).join(' و ');
+            
+            alert(`الجاسوس/الجواسيس هم: ${spyNames}`);
+        }
+
+        // إنهاء اللعبة
+        function endGame() {
+            // إيقاف المؤقت
+            if (gameData.timerInterval) {
+                clearInterval(gameData.timerInterval);
+            }
+            
+            // كشف الجواسيس
+            const spies = gameData.players.filter(player => player.isSpy);
+            const spyNames = spies.map(spy => spy.name).join(' و ');
+            
+            // عرض النتيجة
+            const resultMessage = spies.length > 1 ? 
+                `انتهت اللعبة! الجواسيس هم: ${spyNames}\nالموقع السري كان: ${gameData.currentLocation}` :
+                `انتهت اللعبة! الجاسوس هو: ${spyNames}\nالموقع السري كان: ${gameData.currentLocation}`;
+            
+            alert(resultMessage);
+            
+            // العودة إلى شاشة البداية
+            gameScreen.classList.remove('active');
+            setupScreen.classList.add('active');
+            
+            // إعادة تعيين الحقول
+            const playerInputs = playersContainer.querySelectorAll('.player-name-input');
+            playerInputs.forEach((input, index) => {
+                if (index < 3) {
+                    input.value = '';
+                } else {
+                    // إزالة الحقول الزائدة عن 3
+                    input.parentElement.remove();
+                }
+            });
+            
+            // تحديث الأزرار
+            updateRemoveButtons();
+            updateStartButton();
+        }
+    </script>
+</body>
 </html>
